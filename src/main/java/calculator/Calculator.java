@@ -3,7 +3,6 @@ package calculator;
 import camp.nextstep.edu.missionutils.Console;
 
 public class Calculator {
-    private static final String DEFAULT_DELIMITER = "[,:]";
     public void run() {
         try {
         String input = getUserInput();
@@ -34,8 +33,6 @@ public class Calculator {
         long sum = 0;
         long value = 0;
         for (String token : tokens) {
-            if (token.isEmpty())
-                throw new IllegalArgumentException("123");
             if (token.startsWith("-"))
                 throw new IllegalArgumentException("음수는 허용되지 않습니다.");
             if (!token.matches("\\d+"))
@@ -58,7 +55,7 @@ public class Calculator {
     }
 
     private String parseDelimiter(String input) {
-        String delimiter = DEFAULT_DELIMITER;
+        String delimiter = "[,:]";
         if (input.startsWith("//"))
             delimiter = String.valueOf(input.charAt(2));
         return delimiter;
@@ -68,7 +65,10 @@ public class Calculator {
         if (!input.startsWith("//"))
             return input;
         int suffixIndex = input.indexOf("\\n");
-        return input.substring(suffixIndex + 2);
+        input = input.substring(suffixIndex + 2);
+        if (input.isEmpty())
+            input = "0";
+        return input;
     }
 
     private int calculate(String[] numbers) {
