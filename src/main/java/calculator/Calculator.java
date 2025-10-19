@@ -15,7 +15,7 @@ public class Calculator {
         String delimiter = parseDelimiter(input);
         String numbers = parseNumbers(input);
 
-        String[] tokens = numbers.split(Pattern.quote(delimiter));
+        String[] tokens = numbers.split(delimiter, -1); // 모든 토큰 유지(끝 빈 토큰 포함)
         validateTokens(tokens);
 
         BigInteger result = calculate(tokens);
@@ -43,7 +43,7 @@ public class Calculator {
     private void validateTokens(String[] tokens) {
         for (String token : tokens) {
             if (token.isEmpty()) {
-                throw new IllegalArgumentException("잘못된 입력입니다. 구분자 사이에 값이 없습니다.");
+                throw new IllegalArgumentException("커스텀 구분자 형식 오류.");
             }
             if (token.startsWith("-")) {
                 throw new IllegalArgumentException("음수는 허용되지 않습니다.");
