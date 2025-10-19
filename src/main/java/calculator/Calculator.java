@@ -1,66 +1,71 @@
 package calculator;
 
 import camp.nextstep.edu.missionutils.Console;
+import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.math.BigInteger;
 
 public class Calculator {
-    private static final Pattern CUSTOM_PATTERN = Pattern.compile("^//(.)\\n(.*)$");
+    private static final Pattern CUSTOM_PATTERN = Pattern.compile("//(.)\\r?\\n(.*)");
 
     public void run() {
-        try {
-            String input = getUserInput();
-            validateInput(input);
+        String input = getUserInput();
+        validateInput(input);
 
-            String delimiter = parseDelimiter(input);
-            String numbers = parseNumber(input);
-            String[] tokens = numbers.split(delimiter);
-            validateTokens(tokens);
+        String delimiter = parseDelimiter(input);
+        String numbers = parseNumbers(input);
 
-            System.out.print("결과 : " + calculate(tokens));
-        } catch (IllegalArgumentException e) {
-            System.out.print("에러: " + e.getMessage());
-        }
-    }
+        String[] tokens = numbers.split(Pattern.quote(delimiter));
+        validateTokens(tokens);
 
-    private void validateInput(String input) {
-        if (input.startsWith("//") && !input.contains("\n")) {
-            throw new IllegalArgumentException("커스텀 구분자 형식 오류");
-        }
-    }
-
-    private void validateTokens(String[] tokens) {
-        for (String token : tokens) {
-            if (token.startsWith("-"))
-                throw new IllegalArgumentException("음수는 허용되지 않습니다.");
-            if (!token.matches("\\d+"))
-                throw new IllegalArgumentException("숫자 외 문자가 포함되었습니다.");
-        }
+        BigInteger result = calculate(tokens);
+        printResult(result);
     }
 
     private String getUserInput() {
         System.out.println("덧셈할 문자열을 입력해 주세요.");
         String input = Console.readLine();
-        if (input.isEmpty())
+
+        if (input == null || input.isEmpty())
             input = "0";
         return input;
     }
 
-    private String parseDelimiter(String input) {
-        String delimiter = "[,:]";
-        Matcher matcher = CUSTOM_PATTERN.matcher(input);
-        if (matcher.matches())
-            delimiter = Pattern.quote(matcher.group(1));
-        return delimiter;
+    private void validateInput(String input) {
+        if (input.startsWith("//")) {
+            if (input.length() < 4)
+                throw new IllegalArgumentException("커스텀 구분자 형식 오류");
+            if (!input.contains("\n") && !input.contains("\\n"))
+                throw new IllegalArgumentException("커스텀 구분자 형식 오류");
+        }
     }
 
-    private String parseNumber(String input) {
+    private void validateTokens(String[] tokens) {
+        for (String token : tokens) {
+            if (token.isEmpty()) {
+                throw new IllegalArgumentException("잘못된 입력입니다. 구분자 사이에 값이 없습니다.");
+            }
+            if (token.startsWith("-")) {
+                throw new IllegalArgumentException("음수는 허용되지 않습니다.");
+            }
+            if (!token.matches("\\d+")) {
+                throw new IllegalArgumentException("숫자 외 문자가 포함되었습니다.");
+            }
+        }
+    }
+
+    private String parseDelimiter(String input) {
+        if (input.startsWith("//")) {
+            return String.valueOf(input.charAt(2));
+        }
+        return "[,:]";
+    }
+
+    private String parseNumbers(String input) {
         Matcher matcher = CUSTOM_PATTERN.matcher(input);
+
         if (matcher.matches()) {
             String numbers = matcher.group(2);
-            if (numbers.isEmpty())
-                numbers = "0";
             return numbers;
         }
         return input;
@@ -72,5 +77,9 @@ public class Calculator {
             sum = sum.add(new BigInteger(number));
         }
         return sum;
+    }
+
+    private void printResult(BigInteger result) {
+        System.out.print("결과 : " + result);
     }
 }
