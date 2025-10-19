@@ -64,13 +64,30 @@ public class Calculator {
     private String parseNumbers(String input) {
         Matcher matcher = CUSTOM_PATTERN.matcher(input);
 
-        if (matcher.matches()) {
-            String numbers = matcher.group(2);
-            return numbers;
+        if (matcher.matches())
+            return matcher.group(2);
+
+        // 정규식으로 매칭되지 않은 경우
+        if (input.startsWith("//")) {
+            int suffixIndex = input.indexOf('\n');
+            if (suffixIndex == -1)
+                suffixIndex = input.indexOf("\\n"); // 리터럴 개행 처리
+
+            if (suffixIndex != -1) {
+                int offset;
+                if (input.charAt(suffixIndex) == '\\') {
+                    offset = 2;
+                } else {
+                    offset = 1;
+                }
+                return input.substring(suffixIndex + offset);
+            }
         }
+
         return input;
     }
 
+    // 오버플로우 방지 BigInteger
     private BigInteger calculate(String[] numbers) {
         BigInteger sum = BigInteger.ZERO;
         for (String number : numbers) {
